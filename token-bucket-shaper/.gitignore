@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+build-*/
+*.o
+*.out
+*.a
+a.out
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+compile_commands.json
+.cache/
+
+# Sanitizer / debug artifacts
+*.log
+*.dSYM/
+
+# Editor / OS artifacts
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

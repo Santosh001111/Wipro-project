@@ -1,0 +1,268 @@
+Wipro Project — Commands Reference
+Project Location
+/home/santosh/Documents/Wipro_Project/token-bucket-shaper
+
+
+Enter the project directory:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+
+1. First-Time Setup
+
+Install the required dependencies:
+
+sudo apt-get update
+sudo apt-get install -y build-essential cmake pkg-config \
+  libnetfilter-queue-dev libnfnetlink-dev iptables iperf3 unzip
+
+2. Build the Project
+
+Run this after downloading the project for the first time:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+
+3. Run Unit Tests
+
+Run:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+
+ctest --test-dir build --output-on-failure
+
+
+Expected result:
+
+100% tests passed, 0 tests failed out of 5
+
+4. Normal Project Run — Police Mode
+
+This is the easiest way to run the project:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh police
+
+
+The script automatically:
+
+Sets up the iptables/NFQUEUE rule.
+
+Starts tbshaper.
+
+Runs the traffic test.
+
+Stops the shaper.
+
+Removes the iptables rule.
+
+5. Normal Project Run — Shape Mode
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh shape
+
+6. Custom Test
+
+The general format is:
+
+sudo ./RUN_COMMANDS.sh shape RATE BURST SECONDS
+
+
+Example:
+
+sudo ./RUN_COMMANDS.sh shape 10M 64K 20
+
+
+This runs:
+
+Mode: shape
+
+Rate: 10M
+
+Burst: 64K
+
+Duration: 20 seconds
+
+Another example:
+
+sudo ./RUN_COMMANDS.sh police 1M 64K 10
+
+Manual Testing
+
+Manual testing uses three terminals.
+
+Terminal 1 — Start the Shaper
+
+Open Terminal 1:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+
+
+Set up the iptables rule:
+
+sudo ./scripts/setup_iptables.sh 0
+
+
+Start the shaper:
+
+sudo ./build/tbshaper --mode police --rate 1M --burst 64K --queue 0
+
+
+For shaping mode instead:
+
+sudo ./build/tbshaper --mode shape --rate 1M --burst 64K --queue 0
+
+Verbose Mode
+
+To print information for individual packets:
+
+sudo ./build/tbshaper --mode police --rate 1M --burst 64K --queue 0 --verbose
+
+Terminal 2 — Start iperf3 Server
+
+Open a second terminal:
+
+iperf3 -s
+
+
+Leave this terminal running during the test.
+
+Terminal 3 — Generate Traffic
+
+Open a third terminal:
+
+iperf3 -c 127.0.0.1 -t 10 -b 100M
+
+
+For a longer test:
+
+iperf3 -c 127.0.0.1 -t 30 -b 100M
+
+Latency Test
+
+When running in shaping mode, you can also run:
+
+ping -c 20 127.0.0.1
+
+Stopping the Manual Test
+
+In Terminal 1, press:
+
+Ctrl+C
+
+
+The shaper should perform a clean shutdown.
+
+Then remove the iptables rule:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./scripts/teardown_iptables.sh 0
+
+Verify iptables Cleanup
+
+After the test:
+
+sudo iptables -S OUTPUT
+
+
+Make sure there is no unwanted NFQUEUE rule remaining.
+
+If the NFQUEUE rule is still present, run:
+
+sudo ./scripts/teardown_iptables.sh 0
+
+Rebuild After Source Code Changes
+
+If you modify the C/C++ source code, rebuild the project:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+
+cmake --build build
+
+
+Then run the tests:
+
+ctest --test-dir build --output-on-failure
+
+
+If the tests pass, run the project:
+
+sudo ./RUN_COMMANDS.sh police
+
+Check Program Help
+
+To see all available tbshaper options:
+
+./build/tbshaper --help
+
+Useful File Locations
+File/Directory	Purpose
+CMakeLists.txt	CMake project configuration
+build/	Compiled project files
+build/tbshaper	Main executable
+tests/	Unit tests
+scripts/setup_iptables.sh	Adds NFQUEUE iptables rule
+scripts/teardown_iptables.sh	Removes NFQUEUE iptables rule
+RUN_COMMANDS.sh	Automated demo
+src/	Source code
+Quick Command Cheat Sheet
+Run the project
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh police
+
+Run shaping mode
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh shape
+
+Custom test
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh shape 10M 64K 20
+
+Rebuild
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+cmake --build build
+
+Run tests
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+ctest --test-dir build --output-on-failure
+
+Check help
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+./build/tbshaper --help
+
+Clean up iptables
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./scripts/teardown_iptables.sh 0
+
+Important Notes
+
+The project must be run on Linux with the required NFQUEUE/netfilter support.
+
+tbshaper requires sudo because it interacts with NFQUEUE/iptables.
+
+The iptables rule can affect outgoing traffic while the shaper is running.
+
+Always run the teardown command after a manual test.
+
+Queue number 0 must be the same for both setup and teardown.
+
+If you only want to run the already-built project, you do not need to run CMake again.
+
+Run cmake --build build after changing the source code.
+
+Run the unit tests after rebuilding to verify the changes.
+
+Recommended Daily Workflow
+
+For normal use:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh police
+
+
+For development after changing code:
+
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+cmake --build build
+ctest --test-dir build --output-on-failure
+sudo ./RUN_COMMANDS.sh police

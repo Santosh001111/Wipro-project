@@ -1,0 +1,90 @@
+Yep. Since you've successfully built it, you **don't need to run CMake/build again every time** unless you change the source code.
+
+ Your project is here:
+
+```
+/home/santosh/Documents/Wipro_Project/token-bucket-shaper
+```
+
+ ## Quickest way to run it
+
+ Every time you want to run the project:
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh police
+```
+
+ Or, for shaping mode:
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh shape
+```
+
+ For example, with **10 Mbit/s rate, 64K burst, 20 seconds**:
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./RUN_COMMANDS.sh shape 10M 64K 20
+```
+
+ ## If you want to run it manually
+
+ ### Terminal 1 — start the shaper
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./scripts/setup_iptables.sh 0
+sudo ./build/tbshaper --mode police --rate 1M --burst 64K --queue 0
+```
+
+ ### Terminal 2 — start iperf3 server
+
+```
+iperf3 -s
+```
+
+ ### Terminal 3 — generate traffic
+
+```
+iperf3 -c 127.0.0.1 -t 10 -b 100M
+```
+
+ When finished, press **Ctrl+C** in Terminal 1 and then clean up:
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+sudo ./scripts/teardown_iptables.sh 0
+```
+
+ ## If you modify the source code
+
+ Then rebuild before running:
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+ Then run the project normally.
+
+ ### Your simple cheat sheet
+
+ | What you want | Command |
+| --- | --- |
+| Run police demo | `sudo ./RUN_COMMANDS.sh police` |
+| Run shape demo | `sudo ./RUN_COMMANDS.sh shape` |
+| Rebuild after code changes | `cmake --build build` |
+| Run tests | `ctest --test-dir build --output-on-failure` |
+| Clean up iptables | `sudo ./scripts/teardown_iptables.sh 0` |
+| See available options | `./build/tbshaper --help` |
+
+So for **normal day-to-day use**, this is the main command:
+
+```
+cd /home/santosh/Documents/Wipro_Project/token-bucket-shaper && sudo ./RUN_COMMANDS.sh police
+```
+
+ You can copy-paste that as a single command whenever you want to run the project.
